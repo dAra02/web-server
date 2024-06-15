@@ -6,14 +6,36 @@ document.addEventListener("click", (event) => {
       event.target.closest("li").remove();
     });
   } else if (event.target.dataset.type === "update") {
+    const razmetka = event.target.closest("li");
     const id = event.target.dataset.id;
-    const title = prompt("Введите новое название заметки:");
+    const title = event.target.dataset.title;
+    const initialEdit = razmetka.innerHTML;
 
-    if (title) {
-      update(id, title).then(() => {
-        event.target.closest("li").querySelector("span").textContent = title;
-      });
-    }
+    razmetka.innerHTML = `
+      <input type='text' value="${title}">
+      <div>
+        <button class="btn btn-success" data-type="save" >Сохранить</button>
+        <button class="btn btn-danger" data-type="cancle">Отменить</button>
+      </div>
+    `;
+
+    const obrabot = ({ target }) => {
+      if (target.dataset.type === "cancle") {
+        razmetka.innerHTML = initialEdit;
+      } else if (target.dataset.type === "save") {
+        const inputValue = razmetka.querySelector("input").value;
+        if (inputValue) {
+          update(id, inputValue).then(() => {
+            razmetka.innerHTML = initialEdit;
+            razmetka.querySelector("span").textContent = inputValue;
+            razmetka.querySelector("[data-type=update]").dataset.title =
+              inputValue;
+          });
+        }
+      }
+    };
+
+    razmetka.addEventListener("click", obrabot);
   }
 });
 
